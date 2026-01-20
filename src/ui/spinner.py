@@ -1,24 +1,32 @@
 import time
 
 class Spinner:
-    def __init__(self, oled, frames=None, interval=0.12):
+    """
+    OLED progress-bar spinner.
+    """
+    def __init__(self, oled, width=10, interval=0.12):
         self.oled = oled
-        self.frames = frames or ["|", "/", "-", "\\"]
+        self.width = width
         self.interval = interval
-        self.i = 0
-
-    def _next(self) -> str:
-        ch = self.frames[self.i]
-        self.i = (self.i + 1) % len(self.frames)
-        return ch
 
     def spin(self, duration=3, label="Reading..."):
-        """
-        Show an ASCII spinner on the OLED for `duration` seconds.
-        """
         end = time.time() + duration
+        direction = 1
+        pos = 0
+
         while time.time() < end:
-            ch = self._next()
-            # Two-line display: label + spinner
-            self.oled.text([label, f"[{ch}]"])
+            bar = "█" * pos + "░" * (self.width - pos)
+            self.oled.text([
+                label,
+                f"[{bar}]"
+            ])
+
+            pos += direction
+            if pos >= self.width:
+                pos = self.width
+                direction = -1
+            elif pos <= 0:
+                pos = 0
+                direction = 1
+
             time.sleep(self.interval)
