@@ -27,7 +27,7 @@ class OLED:
 
         # Load custom fonts (Arvo + Mulish) from repo assets
         try:
-            self.font_title = ImageFont.truetype("assets/fonts/Arvo-Regular.ttf", 20)
+            self.font_title = ImageFont.truetype("assets/fonts/Arvo-Regular.ttf", 30)
             self.font_small = ImageFont.truetype("assets/fonts/Mulish-Regular.ttf", 13)
             self.font_large = ImageFont.truetype("assets/fonts/Mulish-Regular.ttf", 22)
         except Exception as e:
