@@ -81,7 +81,9 @@ class OLED:
         self.oled.show()
 
     def show_spinner_frame(self, spinner_text):
-
+        """
+        Spinner-only frame (no labels, no ratings).
+        """
         self.draw.rectangle((0, 0, self.width, self.height), outline=0, fill=0)
 
         spinner_y = (self.height // 2) - 12
@@ -90,59 +92,6 @@ class OLED:
         self.oled.image(self.image)
         self.oled.show()
 
-        def show_face(self, air_rating: str):
-            """
-            Full-screen face based on air_rating:
-            'Very good', 'Good', 'Ok', 'Poor'
-            """
-        rating = (air_rating or "").strip().lower()
-
-        # Clear
-        self.draw.rectangle((0, 0, self.width, self.height), outline=0, fill=0)
-
-        # Face geometry (big circle)
-        cx, cy = self.width // 2, self.height // 2
-        r = min(self.width, self.height) // 2 - 2  # big as possible
-
-        # Outline circle
-        self.draw.ellipse((cx - r, cy - r, cx + r, cy + r), outline=255, fill=0)
-
-        # Eyes
-        eye_r = 4
-        eye_y = cy - 10
-        eye_dx = 18
-        self.draw.ellipse((cx - eye_dx - eye_r, eye_y - eye_r, cx - eye_dx + eye_r, eye_y + eye_r), fill=255)
-        self.draw.ellipse((cx + eye_dx - eye_r, eye_y - eye_r, cx + eye_dx + eye_r, eye_y + eye_r), fill=255)
-
-        # Mouth styles
-        # We'll draw an arc in a bounding box for the mouth.
-        mouth_w = 46
-        mouth_h = 26
-        mouth_y = cy + 6
-        box = (cx - mouth_w//2, mouth_y - mouth_h//2, cx + mouth_w//2, mouth_y + mouth_h//2)
-
-        if rating in ("very good", "verygood", "very_good"):
-            # Big smile
-            self.draw.arc(box, start=200, end=340, fill=255, width=3)
-            # Add dimples
-            self.draw.point((cx - 24, cy + 18), fill=255)
-            self.draw.point((cx + 24, cy + 18), fill=255)
-
-        elif rating == "good":
-            # Gentle smile
-            self.draw.arc(box, start=210, end=330, fill=255, width=3)
-
-        elif rating == "ok":
-            # Straight mouth
-            y = cy + 18
-            self.draw.line((cx - 18, y, cx + 18, y), fill=255, width=3)
-
-        else:
-            # Poor (default): frown
-            self.draw.arc(box, start=20, end=160, fill=255, width=3)
-
-        self.oled.image(self.image)
-        self.oled.show()
 
 
 
@@ -161,3 +110,65 @@ class OLED:
 
         self.oled.image(self.image)
         self.oled.show()
+
+    def show_face(self, air_rating: str):
+        """
+        Full-screen face based on air_rating:
+        'Very good', 'Good', 'Ok', 'Poor'
+        """
+        rating = (air_rating or "").strip().lower()
+
+        # Clear
+        self.draw.rectangle((0, 0, self.width, self.height), outline=0, fill=0)
+
+        # Face geometry
+        cx, cy = self.width // 2, self.height // 2
+        r = min(self.width, self.height) // 2 - 2
+
+        # Face outline
+        self.draw.ellipse(
+            (cx - r, cy - r, cx + r, cy + r),
+            outline=255,
+            fill=0
+        )
+
+        # Eyes
+        eye_r = 4
+        eye_y = cy - 10
+        eye_dx = 18
+        self.draw.ellipse(
+            (cx - eye_dx - eye_r, eye_y - eye_r,
+             cx - eye_dx + eye_r, eye_y + eye_r),
+            fill=255
+        )
+        self.draw.ellipse(
+            (cx + eye_dx - eye_r, eye_y - eye_r,
+             cx + eye_dx + eye_r, eye_y + eye_r),
+            fill=255
+        )
+
+        # Mouth
+        mouth_w = 46
+        mouth_h = 26
+        mouth_y = cy + 6
+        box = (
+            cx - mouth_w // 2,
+            mouth_y - mouth_h // 2,
+            cx + mouth_w // 2,
+            mouth_y + mouth_h // 2,
+        )
+
+        if rating in ("very good", "verygood", "very_good"):
+            self.draw.arc(box, start=200, end=340, fill=255, width=3)
+        elif rating == "good":
+            self.draw.arc(box, start=210, end=330, fill=255, width=3)
+        elif rating == "ok":
+            y = cy + 18
+            self.draw.line((cx - 18, y, cx + 18, y), fill=255, width=3)
+        else:  # Poor / default
+            self.draw.arc(box, start=20, end=160, fill=255, width=3)
+
+        self.oled.image(self.image)
+        self.oled.show()
+
+
