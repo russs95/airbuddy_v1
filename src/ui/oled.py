@@ -62,6 +62,28 @@ class OLED:
         self.oled.image(self.image)
         self.oled.show()
 
+        def show_results(self, temp_c, eco2_ppm, tvoc_ppb, rating="GOOD"):
+            """
+            Stable, non-animated results screen (minimal flicker).
+            """
+        self.draw.rectangle((0, 0, self.width, self.height), outline=0, fill=0)
+
+        # Title
+        self.draw_centered("AirBuddy", 2, self.font_small)
+
+        # Values (left aligned for fast scanning)
+        y = 18
+        self.draw.text((2, y),     f"Temp: {temp_c:>4.1f} C", font=self.font_small, fill=255)
+        self.draw.text((2, y+14),  f"eCO2: {eco2_ppm:>4d} ppm", font=self.font_small, fill=255)
+        self.draw.text((2, y+28),  f"TVOC: {tvoc_ppb:>4d} ppb", font=self.font_small, fill=255)
+
+        # Rating (big + centered near bottom)
+        self.draw_centered(f"AIR: {rating}", 48, self.font_small)
+
+        self.oled.image(self.image)
+        self.oled.show()
+
+
     def show_spinner_frame(self, label, spinner_text):
         """
         Reduced flicker approach:
