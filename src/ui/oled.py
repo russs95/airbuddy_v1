@@ -42,7 +42,7 @@ class OLED:
             # Dedicated spinner font (generic + reliable glyph coverage)
         try:
             self.font_spinner = ImageFont.truetype(
-                "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf", 22
+                "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf", 12
             )
         except Exception:
             self.font_spinner = self.font_large  # fallback
