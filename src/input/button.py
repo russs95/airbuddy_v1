@@ -1,19 +1,10 @@
-import RPi.GPIO as GPIO
-import time
+from gpiozero import Button
 
 
-class Button:
-    def __init__(self, pin=17):
-        self.pin = pin
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setup(self.pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+class AirBuddyButton:
+    def __init__(self, gpio_pin=17):
+        # pull_up=True means button to GND; pressed = LOW
+        self.button = Button(gpio_pin, pull_up=True, bounce_time=0.05)
 
     def wait_for_press(self):
-        while GPIO.input(self.pin) == GPIO.HIGH:
-            time.sleep(0.01)
-
-        # debounce
-        time.sleep(0.2)
-
-    def cleanup(self):
-        GPIO.cleanup()
+        self.button.wait_for_press()

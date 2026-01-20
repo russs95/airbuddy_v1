@@ -1,49 +1,28 @@
-"""
-airBuddy v1
-Main entry point.
-
-For now:
-- Initialize OLED
-- Run a spinner test to confirm UI loop works
-
-Later this will:
-- Wait for button press
-- Spin while reading sensors
-- Display air quality results
-"""
-
 import time
 
 from ui.oled import OLED
 from ui.spinner import Spinner
+from input.button import AirBuddyButton
 
 
 def main():
-    # Initialize OLED
     oled = OLED()
-    oled.text([
-        "airBuddy v1",
-        "Booting..."
-    ])
-    time.sleep(1.5)
-
-    # Initialize spinner (spinner writes directly to OLED)
     spinner = Spinner(oled)
+    btn = AirBuddyButton(gpio_pin=17)
 
-    # Spinner test
-    spinner.spin(duration=3, label="Testing spinner")
+    # Idle loop: wait for button, then spin, then return to waiting
+    while True:
+        oled.show_waiting("Waiting for button")
+        btn.wait_for_press()
 
-    # Final confirmation screen
-    oled.text([
-        "OLED OK",
-        "Spinner OK",
-        "",
-        "Ready."
-    ])
-    time.sleep(3)
+        # tiny pause to avoid bounce-trigger “double press”
+        time.sleep(0.08)
 
-    # Clear display before exit (optional)
-    oled.clear()
+        spinner.spin(duration=6, label="Sampling air")
+
+        # After spinner, for now go back to waiting immediately
+        # (Later: show sensor values for 10 seconds)
+        time.sleep(0.2)
 
 
 if __name__ == "__main__":
