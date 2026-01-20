@@ -27,9 +27,9 @@ class OLED:
 
         # Load custom fonts (Arvo + Mulish) from repo assets
         try:
-            self.font_title = ImageFont.truetype("assets/fonts/Arvo-Regular.ttf", 30)
+            self.font_title = ImageFont.truetype("assets/fonts/Arvo-Regular.ttf", 24)
             self.font_small = ImageFont.truetype("assets/fonts/Mulish-Regular.ttf", 13)
-            self.font_large = ImageFont.truetype("assets/fonts/Mulish-Regular.ttf", 22)
+            self.font_large = ImageFont.truetype("assets/fonts/Mulish-Regular.ttf", 18)
         except Exception as e:
             # Fallback fonts to avoid crashing if fonts aren't present yet
             print("Font load failed, using defaults:", e)
@@ -91,9 +91,6 @@ class OLED:
         Stable, non-animated results screen (minimal flicker).
         """
         self.draw.rectangle((0, 0, self.width, self.height), outline=0, fill=0)
-
-        # Title
-        self.draw_centered("airBuddy", 2, self.font_title)
 
         # Values (left aligned for fast scanning)
         y = 22
