@@ -82,37 +82,31 @@ class OLED:
 
     def show_spinner_frame(self, frame):
         """
-        Spinner-only frame, perfectly centered.
-
+        Spinner-only frame.
         `frame` can be:
-          - string: drawn once (normal)
-          - dict: {"text": str, "thick": bool} to draw with slight thickness pulse
+          - a string (single line)
+          - a list of strings (multiple lines)
+        Uses the dedicated spinner font (DejaVu) for reliable glyphs.
         """
         self.draw.rectangle((0, 0, self.width, self.height), outline=0, fill=0)
 
-        thick = False
-        if isinstance(frame, dict):
-            text = frame.get("text", "")
-            thick = bool(frame.get("thick", False))
+        if isinstance(frame, str):
+            lines = [frame]
         else:
-            text = str(frame)
+            lines = list(frame)
 
-        # Measure text height precisely
-        bbox = self.draw.textbbox((0, 0), text, font=self.font_spinner)
-        text_h = bbox[3] - bbox[1]
+        # Center the block vertically based on number of lines
+        line_h = 12  # approx for font size ~22
+        total_h = line_h * len(lines)
+        y = max(0, (self.height - total_h) // 2)
 
-        # Center vertically
-        y = max(0, (self.height - text_h) // 2)
-
-        # Draw centered
-        self.draw_centered(text, y, self.font_spinner)
-
-        # Optional thickness pulse: draw same text slightly lower
-        if thick:
-            self.draw_centered(text, y + 2, self.font_spinner)
+        for line in lines:
+            self.draw_centered(line, y, self.font_spinner)
+            y += line_h
 
         self.oled.image(self.image)
         self.oled.show()
+
 
 
 
