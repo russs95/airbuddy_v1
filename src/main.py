@@ -15,12 +15,14 @@ def fake_readings():
     eco2_ppm = int(random.choice([650, 720, 840, 980, 1100, 1350]))
     tvoc_ppb = int(random.choice([35, 60, 120, 180, 260, 420]))
 
-    if eco2_ppm < 800:
-        rating = "GOOD"
-    elif eco2_ppm < 1200:
-        rating = "OK"
+    if eco2_ppm < 700:
+        rating = "Very good"
+    elif eco2_ppm < 900:
+        rating = "Good"
+    elif eco2_ppm < 1300:
+        rating = "Ok"
     else:
-        rating = "POOR"
+        rating = "Poor"
 
     return temp_c, eco2_ppm, tvoc_ppb, rating
 
@@ -31,16 +33,26 @@ def main():
     btn = AirBuddyButton(gpio_pin=17)
 
     while True:
+        # Idle
         oled.show_waiting("Waiting for button")
         btn.wait_for_press()
         time.sleep(0.08)  # debounce cushion
 
+        # Spinner
         spinner.spin(duration=6)
 
+        # Fake data (for now)
         temp_c, eco2_ppm, tvoc_ppb, rating = fake_readings()
         oled.show_results(temp_c, eco2_ppm, tvoc_ppb, rating=rating)
 
-        time.sleep(10)  # hold results
+        # Hold results
+        time.sleep(10)
+
+        # Mood face
+        oled.show_face(rating)
+        time.sleep(3)
+
+        # Back to idle
         oled.clear()
 
 
