@@ -27,7 +27,7 @@ class OLED:
 
         # Load custom fonts (Arvo + Mulish) from repo assets
         try:
-            self.font_title = ImageFont.truetype("assets/fonts/Arvo-Regular.ttf", 24)
+            self.font_title = ImageFont.truetype("assets/fonts/Arvo-Regular.ttf", 22)
             self.font_small = ImageFont.truetype("assets/fonts/Mulish-Regular.ttf", 13)
             self.font_large = ImageFont.truetype("assets/fonts/Mulish-Regular.ttf", 18)
         except Exception as e:
@@ -70,21 +70,20 @@ class OLED:
         self.oled.image(self.image)
         self.oled.show()
 
-    def show_spinner_frame(self, label, spinner_text):
-        """
-        Reduced flicker approach:
-        - Clear and redraw only the label band and spinner region.
-        """
-        # Label area
-        self.draw.rectangle((0, 0, self.width, 22), outline=0, fill=0)
-        self.draw_centered(label, 3, self.font_small)
+        def show_spinner_frame(self, label, spinner_text):
+            """
+            Spinner-only frame (no label, centered vertically).
+            """
+        # Clear full screen (spinner is transient, so full clear is OK)
+        self.draw.rectangle((0, 0, self.width, self.height), outline=0, fill=0)
 
-        # Spinner area
-        self.draw.rectangle((0, 22, self.width, self.height), outline=0, fill=0)
-        self.draw_centered(spinner_text, 30, self.font_large)
+        # Center spinner vertically
+        spinner_y = (self.height // 2) - 12
+        self.draw_centered(spinner_text, spinner_y, self.font_large)
 
         self.oled.image(self.image)
         self.oled.show()
+
 
     def show_results(self, temp_c, eco2_ppm, tvoc_ppb, rating="GOOD"):
         """
