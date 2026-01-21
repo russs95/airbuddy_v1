@@ -66,6 +66,12 @@ class OLED:
         x = self._center_x(text, font)
         self.draw.text((x, y), text, font=font, fill=255)
 
+    def text_size(self, text, font):
+        # Pillow compatible text measurement
+        bbox = self.draw.textbbox((0, 0), text, font=font)
+        return bbox[2] - bbox[0], bbox[3] - bbox[1]
+
+
     # ---------- screens ----------
 
     def show_waiting(self, line="Waiting for button"):

@@ -3,6 +3,7 @@ import random
 
 from ui.oled import OLED
 from ui.spinner import Spinner
+from ui.booter import Booter
 from input.button import AirBuddyButton
 
 
@@ -30,7 +31,10 @@ def fake_readings():
 
 def main():
     oled = OLED()
-    oled.show_waiting("airBuddy is booting")  # <-- add this line
+
+    # Boot loader screen (title + progress bar)
+    Booter(oled).show(duration=2.5, fps=12)
+
     spinner = Spinner(oled)
     btn = AirBuddyButton(gpio_pin=17)
 
