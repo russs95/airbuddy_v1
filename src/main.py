@@ -10,6 +10,7 @@ def fake_readings():
     """
     Generate plausible placeholder readings.
     We'll swap this out with real sensor reads later.
+    Testing
     """
     temp_c = round(random.uniform(24.0, 30.5), 1)
     eco2_ppm = int(random.choice([650, 720, 840, 980, 1100, 1350]))
