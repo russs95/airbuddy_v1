@@ -120,7 +120,7 @@ class OLED:
     def show_waiting(self, line="Know your air."):
         self.draw.rectangle((0, 0, self.width, self.height), outline=0, fill=0)
 
-        self.draw_centered("airBuddy", 10, self.font_title)
+        self.draw_centered("airBuddy", 9, self.font_title)
         self.draw_centered(line, 38, self.font_small)
 
         self.oled.image(self.image)
@@ -164,7 +164,7 @@ class OLED:
         self.draw.rectangle((0, 0, self.width, self.height), outline=0, fill=0)
 
         # Heading near top
-        self.draw_centered(heading, 4, self.font_medium)
+        self.draw_centered(heading, 3, self.font_medium)
 
         # Value centered
         value_h = self._text_height(value, self.font_title)
