@@ -61,7 +61,7 @@ class Booter:
 
         # Bar position: align to the same y as idle "Waiting for button" line
         # (idle uses draw_centered(line, 34, font_small))
-        idle_line_y = 50
+        idle_line_y = 49
 
         # Use block characters to build a text bar
         block_char = "█"
