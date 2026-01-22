@@ -72,7 +72,7 @@ class OLED:
         tw = bbox[2] - bbox[0]
         th = bbox[3] - bbox[1]
         x = max(0, self.width - tw - 2)
-        y = max(0, self.height - th - 1)
+        y = max(0, self.height - th - 6)
         self.draw.text((x, y), tag, font=self.font_small, fill=255)
 
     def _text_height(self, text: str, font):
