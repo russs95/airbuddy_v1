@@ -277,6 +277,4 @@ class OLED:
         except Exception as e:
             print(f"[OLED] Failed to init OLED, running headless. ({e})", flush=True)
             return HeadlessDisplay()
-        except Exception as e2:
-            print(f"[AirSensor] read failed; using fallback. err={e2!r}", flush=True)
-            last = self.get_last_logged()
+

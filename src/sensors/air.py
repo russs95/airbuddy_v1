@@ -248,19 +248,27 @@ class AirSensor:
                 if log:
                     self._append_log(r)
                 return r
-            except Exception:
-                # Try re-init once then retry read quickly
+
+            except Exception as e1:
+                # First failure → try re-init once
+                print(f"[AirSensor] read failed, retrying init. err={e1!r}", flush=True)
+
                 self._try_init()
+
                 try:
                     r = self._read_once(source=source)
                     if log:
                         self._append_log(r)
                     return r
-                except Exception:
+
+                except Exception as e2:
                     # Fallback to last logged value (if any)
+                    print(f"[AirSensor] read failed; using fallback. err={e2!r}", flush=True)
+
                     last = self.get_last_logged()
                     if last is None:
                         raise RuntimeError("Sensor read failed and no fallback record exists")
+
                     return AirReading(
                         timestamp_iso=self._now_iso_local(),
                         temp_c=last.temp_c,
@@ -271,6 +279,7 @@ class AirSensor:
                         rating=last.rating,
                         source="fallback",
                     )
+
 
     # ----------------------------
     # NON-BLOCKING WARMUP (FOR SPINNER IN MAIN)
