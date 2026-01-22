@@ -49,6 +49,21 @@ class OLED:
         except Exception:
             self.font_spinner = self.font_large  # fallback
 
+            # New: heading font (Mulish 14) + big value font (Arvo bigger)
+        try:
+            self.font_heading = ImageFont.truetype("assets/fonts/Mulish-Regular.ttf", 14)
+        except Exception:
+            self.font_heading = self.font_small
+
+        try:
+            self.font_value = ImageFont.truetype("assets/fonts/Arvo-Regular.ttf", 28)
+        except Exception:
+            self.font_value = self.font_large
+
+        # Always define a generic fallback font handle (prevents AttributeError)
+        self.font = self.font_small
+
+
         self.oled.fill(0)
         self.oled.show()
 
@@ -57,6 +72,17 @@ class OLED:
 
 
     # ---------- Helpers ----------
+
+    def _draw_tag_bottom_right(self, tag: str):
+        if not tag:
+            return
+        bbox = self.draw.textbbox((0, 0), tag, font=self.font_small)
+        tw = bbox[2] - bbox[0]
+        th = bbox[3] - bbox[1]
+        x = max(0, self.width - tw - 2)
+        y = max(0, self.height - th - 1)
+        self.draw.text((x, y), tag, font=self.font_small, fill=255)
+
 
     def clear(self):
         self.draw.rectangle((0, 0, self.width, self.height), outline=0, fill=0)
@@ -79,6 +105,32 @@ class OLED:
 
 
     # ---------- screens ----------
+
+    def show_metric(self, heading: str, value: str, tag: str = "just now"):
+        """
+        One metric per screen:
+          - heading: Mulish 14
+          - value: Arvo large
+          - tag: bottom-right ("just now" or "cached") in small font
+        """
+        self.draw.rectangle((0, 0, self.width, self.height), outline=0, fill=0)
+
+        # Heading (top)
+        self.draw_centered(heading, 6, self.font_heading)
+
+        # Value (center)
+        # Center vertically around the middle
+        bbox = self.draw.textbbox((0, 0), value, font=self.font_value)
+        text_h = bbox[3] - bbox[1]
+        y_value = max(0, (self.height - text_h) // 2 - 2)
+        self.draw_centered(value, y_value, self.font_value)
+
+        # Tag (bottom-right)
+        self._draw_tag_bottom_right(tag)
+
+        self.oled.image(self.image)
+        self.oled.show()
+
 
     def show_waiting(self, line="Waiting for button"):
         """
@@ -170,52 +222,43 @@ class OLED:
         self.oled.show()
 
 
-    def show_face(self, air_rating: str):
+    def show_face(self, air_rating: str, tag: str = "just now"):
         """
-        Full-screen face based on air_rating:
-        'Very good', 'Good', 'Ok', 'Poor'
+        Full-screen face based on air_rating + label underneath:
+        "Air quality: Good"
         """
-        rating = (air_rating or "").strip().lower()
+        rating_raw = (air_rating or "").strip()
+        rating = rating_raw.lower()
 
         # Clear
         self.draw.rectangle((0, 0, self.width, self.height), outline=0, fill=0)
 
-        # Face geometry
-        cx, cy = self.width // 2, self.height // 2
-        r = min(self.width, self.height) // 2 - 2
+        # Leave space at bottom for label text
+        label = f"Air quality: {rating_raw if rating_raw else 'Ok'}"
+
+        # Face geometry (slightly smaller to fit label)
+        cx = self.width // 2
+        cy = (self.height // 2) - 6
+        r = min(self.width, self.height) // 2 - 10  # smaller radius
 
         # Face outline
-        self.draw.ellipse(
-            (cx - r, cy - r, cx + r, cy + r),
-            outline=255,
-            fill=0
-        )
+        self.draw.ellipse((cx - r, cy - r, cx + r, cy + r), outline=255, fill=0)
 
         # Eyes
         eye_r = 4
         eye_y = cy - 10
         eye_dx = 18
-        self.draw.ellipse(
-            (cx - eye_dx - eye_r, eye_y - eye_r,
-             cx - eye_dx + eye_r, eye_y + eye_r),
-            fill=255
-        )
-        self.draw.ellipse(
-            (cx + eye_dx - eye_r, eye_y - eye_r,
-             cx + eye_dx + eye_r, eye_y + eye_r),
-            fill=255
-        )
+        self.draw.ellipse((cx - eye_dx - eye_r, eye_y - eye_r,
+                           cx - eye_dx + eye_r, eye_y + eye_r), fill=255)
+        self.draw.ellipse((cx + eye_dx - eye_r, eye_y - eye_r,
+                           cx + eye_dx + eye_r, eye_y + eye_r), fill=255)
 
         # Mouth
         mouth_w = 46
         mouth_h = 26
         mouth_y = cy + 6
-        box = (
-            cx - mouth_w // 2,
-            mouth_y - mouth_h // 2,
-            cx + mouth_w // 2,
-            mouth_y + mouth_h // 2,
-        )
+        box = (cx - mouth_w // 2, mouth_y - mouth_h // 2,
+               cx + mouth_w // 2, mouth_y + mouth_h // 2)
 
         if rating in ("very good", "verygood", "very_good"):
             self.draw.arc(box, start=200, end=340, fill=255, width=3)
@@ -227,8 +270,16 @@ class OLED:
         else:  # Poor / default
             self.draw.arc(box, start=20, end=160, fill=255, width=3)
 
+        # Label centered at bottom
+        self.draw_centered(label, self.height - 14, self.font_small)
+
+        # Tag bottom-right (optional but consistent)
+        self._draw_tag_bottom_right(tag)
+
         self.oled.image(self.image)
         self.oled.show()
+
+
 
     @classmethod
     def try_create(cls):

@@ -61,30 +61,32 @@ def main():
             cached = True
 
 
+            # ----------------------------
+        # METRIC SCREENS (2s each)
         # ----------------------------
-        # MOOD FACE
-        # ----------------------------
-        oled.show_face(reading.rating)
-        time.sleep(3)
+        tag = "cached" if cached else "just now"
+
+        oled.show_metric("Temperature", f"{reading.temp_c:.1f}°C", tag=tag)
+        time.sleep(2)
+
+        oled.show_metric("Humidity", f"{reading.humidity:.0f}%", tag=tag)
+        time.sleep(2)
+
+        oled.show_metric("CO₂ (ppm)", f"{reading.eco2_ppm}", tag=tag)
+        time.sleep(2)
+
+        oled.show_metric("TVOC (ppb)", f"{reading.tvoc_ppb}", tag=tag)
+        time.sleep(2)
 
         # ----------------------------
-        # RESULTS SCREEN
+        # FACE LAST (2s)
         # ----------------------------
-        oled.show_results(
-            temp_c=reading.temp_c,
-            humidity=reading.humidity,
-            eco2_ppm=reading.eco2_ppm,
-            tvoc_ppb=reading.tvoc_ppb,
-            rating=reading.rating,
-            cached=cached,
-        )
+        oled.show_face(reading.rating, tag=tag)
+        time.sleep(2)
 
-        time.sleep(10)
-
-        # ----------------------------
-        # BACK TO IDLE
-        # ----------------------------
+        # Back to idle
         oled.clear()
+
 
 
 if __name__ == "__main__":
