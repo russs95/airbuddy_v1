@@ -10,3 +10,6 @@ venv/
 .DS_Store
 .vscode/
 .idea/
+
+logs/air_records.csv
+test_sensor.py
