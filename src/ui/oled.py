@@ -121,7 +121,7 @@ class OLED:
         self.draw.rectangle((0, 0, self.width, self.height), outline=0, fill=0)
 
         self.draw_centered("airBuddy", 10, self.font_title)
-        self.draw_centered(line, 34, self.font_small)
+        self.draw_centered(line, 36, self.font_small)
 
         self.oled.image(self.image)
         self.oled.show()

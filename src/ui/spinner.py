@@ -28,7 +28,7 @@ class Spinner:
     FRAME_INTERVAL = 0.05   # Seconds between frames (animation speed)
     # Lower = faster, higher = calmer
 
-    PEAK_THICKNESS_MARGIN = 3
+    PEAK_THICKNESS_MARGIN = 4
     # How close to max width the bar must be
     # before triggering the "thick" (vertical pulse)
 
