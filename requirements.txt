@@ -1,2 +1,5 @@
 adafruit-circuitpython-ssd1306
 pillow
+adafruit-circuitpython-ens160
+adafruit-circuitpython-ahtx0
+adafruit-blinka

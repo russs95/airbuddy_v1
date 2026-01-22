@@ -121,21 +121,47 @@ class OLED:
         self.oled.show()
 
 
-    def show_results(self, temp_c, eco2_ppm, tvoc_ppb, rating="GOOD"):
+    def show_results(self, temp_c, eco2_ppm, tvoc_ppb, rating="Ok", humidity=None, cached=False):
         """
-        Data-only results screen.
+        Show air readings. If cached=True, add a '(cached)' marker.
+        humidity is optional.
         """
-        self.draw.rectangle((0, 0, self.width, self.height), outline=0, fill=0)
+        self.clear()
 
-        y = 6
-        self.draw.text((2, y), f"Temp: {temp_c:>4.1f} C", font=self.font_small, fill=255)
-        self.draw.text((2, y + 16), f"eCO2: {eco2_ppm:>4d} ppm", font=self.font_small, fill=255)
-        self.draw.text((2, y + 32), f"TVOC: {tvoc_ppb:>4d} ppb", font=self.font_small, fill=255)
+        # Title line
+        title = "Air data"
+        if cached:
+            title = "Air data (cached)"
 
-        self.draw_centered(f"AIR: {rating}", 50, self.font_small)
+        # You likely already have a title font; fall back safely
+        title_font = getattr(self, "font_title", getattr(self, "font_large", self.font))
+        body_font  = getattr(self, "font_small", self.font)
 
+        # Draw title centered near top
+        self.draw_centered(title, 0, title_font)
+
+        # Body lines
+        y = 26  # spacing below title (tune if needed)
+
+        self.draw.text((2, y), f"Temp: {temp_c:>4.1f} C", font=body_font, fill=255)
+        y += 12
+
+        if humidity is not None:
+            self.draw.text((2, y), f"Hum:  {humidity:>4.1f} %", font=body_font, fill=255)
+            y += 12
+
+        self.draw.text((2, y), f"eCO2: {eco2_ppm:>4d} ppm", font=body_font, fill=255)
+        y += 12
+
+        self.draw.text((2, y), f"TVOC: {tvoc_ppb:>4d} ppb", font=body_font, fill=255)
+        y += 12
+
+        self.draw.text((2, y), f"Air:  {rating}", font=body_font, fill=255)
+
+        # Push to display
         self.oled.image(self.image)
         self.oled.show()
+
 
     def show_face(self, air_rating: str):
         """

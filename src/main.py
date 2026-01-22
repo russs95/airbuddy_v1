@@ -1,32 +1,10 @@
 import time
-import random
 
 from ui.oled import OLED
 from ui.spinner import Spinner
 from ui.booter import Booter
 from input.button import AirBuddyButton
-
-
-def fake_readings():
-    """
-    Generate plausible placeholder readings.
-    We'll swap this out with real sensor reads later.
-    Testing
-    """
-    temp_c = round(random.uniform(24.0, 30.5), 1)
-    eco2_ppm = int(random.choice([650, 720, 840, 980, 1100, 1350]))
-    tvoc_ppb = int(random.choice([35, 60, 120, 180, 260, 420]))
-
-    if eco2_ppm < 700:
-        rating = "Very good"
-    elif eco2_ppm < 900:
-        rating = "Good"
-    elif eco2_ppm < 1300:
-        rating = "Ok"
-    else:
-        rating = "Poor"
-
-    return temp_c, eco2_ppm, tvoc_ppb, rating
+from sensors.air import AirSensor
 
 
 def main():
@@ -38,27 +16,70 @@ def main():
     spinner = Spinner(oled)
     btn = AirBuddyButton(gpio_pin=17)
 
+    # Initialize air sensor manager
+    air = AirSensor()
+
+    # Start background logging:
+    #   every 10 minutes, with 30s warmup
+    air.start_periodic_logging(interval_seconds=600, warmup_seconds=30)
+
     while True:
-        # Idle
+        # ----------------------------
+        # IDLE
+        # ----------------------------
         oled.show_waiting("Waiting for button")
         btn.wait_for_press()
         time.sleep(0.08)  # debounce cushion
 
-        # Spinner
-        spinner.spin(duration=6)
+        # ----------------------------
+        # SAMPLING (warmup during spinner)
+        # ----------------------------
+        cached = False
 
-        # Fake data (for now)
-        temp_c, eco2_ppm, tvoc_ppb, rating = fake_readings()
-        oled.show_results(temp_c, eco2_ppm, tvoc_ppb, rating=rating)
+        try:
+            air.begin_sampling(warmup_seconds=6, source="button")
+            spinner.spin(duration=6)
+            reading = air.finish_sampling(log=True)
 
-        # Hold results
-        time.sleep(10)
+            # If AirSensor returned a fallback record, mark cached
+            if getattr(reading, "source", "") == "fallback":
+                cached = True
 
-        # Mood face
-        oled.show_face(rating)
+        except Exception:
+            last = air.get_last_logged()
+            if last is None:
+                oled.show_waiting("Sensor error")
+                time.sleep(3)
+                oled.clear()
+                continue
+
+            reading = last
+            cached = True
+
+
+        # ----------------------------
+        # MOOD FACE
+        # ----------------------------
+        oled.show_face(reading.rating)
         time.sleep(3)
 
-        # Back to idle
+        # ----------------------------
+        # RESULTS SCREEN
+        # ----------------------------
+        oled.show_results(
+            temp_c=reading.temp_c,
+            humidity=reading.humidity,
+            eco2_ppm=reading.eco2_ppm,
+            tvoc_ppb=reading.tvoc_ppb,
+            rating=reading.rating,
+            cached=cached,
+        )
+
+        time.sleep(10)
+
+        # ----------------------------
+        # BACK TO IDLE
+        # ----------------------------
         oled.clear()
 
 
