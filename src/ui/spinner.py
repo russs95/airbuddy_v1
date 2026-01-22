@@ -25,10 +25,10 @@ class Spinner:
     # Smaller = smoother, slower breathing
     # Larger = punchier, more mechanical
 
-    FRAME_INTERVAL = 0.05   # Seconds between frames (animation speed)
+    FRAME_INTERVAL = 0.04   # Seconds between frames (animation speed)
     # Lower = faster, higher = calmer
 
-    PEAK_THICKNESS_MARGIN = 4
+    PEAK_THICKNESS_MARGIN = 6
     # How close to max width the bar must be
     # before triggering the "thick" (vertical pulse)
 

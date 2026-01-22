@@ -170,11 +170,11 @@ class OLED:
         self.draw.rectangle((0, 0, self.width, self.height), outline=0, fill=0)
 
         # Heading near top
-        self.draw_centered(heading, 3, self.font_medium)
+        self.draw_centered(heading, 5, self.font_medium)
 
         # Value centered
         value_h = self._text_height(value, self.font_title)
-        y_value = max(0, (self.height - value_h) // 2 - 2)
+        y_value = max(0, (self.height - value_h) // 2 + 2)
         self.draw_centered(value, y_value, self.font_title)
 
         # Tag
