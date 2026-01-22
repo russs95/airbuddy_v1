@@ -7,7 +7,6 @@ from input.button import AirBuddyButton
 from sensors.air import AirSensor
 
 
-
 def main():
     oled = OLED.try_create()
 
@@ -17,15 +16,13 @@ def main():
     else:
         print("[BOOT] airBuddy starting (headless)", flush=True)
 
-
     spinner = Spinner(oled)
     btn = AirBuddyButton(gpio_pin=17)
 
     # Initialize air sensor manager
     air = AirSensor()
 
-    # Start background logging:
-    #   every 10 minutes, with 30s warmup
+    # Start background logging immediately (every 10 minutes, 30s warmup)
     air.start_periodic_logging(interval_seconds=600, warmup_seconds=30)
 
     while True:
@@ -37,16 +34,23 @@ def main():
         time.sleep(0.08)  # debounce cushion
 
         # ----------------------------
-        # SAMPLING (warmup during spinner)
+        # SAMPLING (button preempts background logging)
         # ----------------------------
         cached = False
+        reading = None
 
         try:
+            # Pause background logging to avoid sensor contention
+            # (If not implemented yet, we'll add it in sensors/air.py)
+            if hasattr(air, "pause_periodic_logging"):
+                air.pause_periodic_logging()
+
+            # Warmup occurs while spinner runs
             air.begin_sampling(warmup_seconds=6, source="button")
             spinner.spin(duration=6)
             reading = air.finish_sampling(log=True)
 
-            # If AirSensor returned a fallback record, mark cached
+            # Mark cached only if AirSensor reports fallback
             if getattr(reading, "source", "") == "fallback":
                 cached = True
 
@@ -61,9 +65,13 @@ def main():
             reading = last
             cached = True
 
+        finally:
+            # Resume background logging after button sampling
+            if hasattr(air, "resume_periodic_logging"):
+                air.resume_periodic_logging()
 
-            # ----------------------------
-        # METRIC SCREENS (2s each)
+        # ----------------------------
+        # DISPLAY SEQUENCE (2s each)
         # ----------------------------
         tag = "cached" if cached else "just now"
 
@@ -79,16 +87,12 @@ def main():
         oled.show_metric("TVOC (ppb)", f"{reading.tvoc_ppb}", tag=tag)
         time.sleep(2)
 
-        # ----------------------------
-        # FACE LAST (2s)
-        # ----------------------------
+        # Face last (2s) — no tag
         oled.show_face(reading.rating)
-
         time.sleep(2)
 
         # Back to idle
         oled.clear()
-
 
 
 if __name__ == "__main__":
