@@ -21,7 +21,7 @@ class Spinner:
     MIN_BAR_CHARS = 2       # Narrowest bar width (calm / contracted state)
     MAX_BAR_CHARS = 16      # Widest bar width (peak / inhale state)
 
-    BAR_STEP = 1            # Number of characters added per frame
+    BAR_STEP = 2            # Number of characters added per frame
     # Smaller = smoother, slower breathing
     # Larger = punchier, more mechanical
 

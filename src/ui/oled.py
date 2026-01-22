@@ -20,28 +20,64 @@ class OLED:
     SPINNER_PATH = "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf"
 
     def __init__(self, width=128, height=64, addr=0x3C):
-        # I2C init
+    # --------------------------------------------------
+    # I2C / DISPLAY INITIALIZATION
+    # --------------------------------------------------
         i2c = busio.I2C(board.SCL, board.SDA)
         self.oled = adafruit_ssd1306.SSD1306_I2C(width, height, i2c, addr=addr)
 
         self.width = width
         self.height = height
 
-        # Persistent buffer
+        # Persistent drawing buffer (prevents flicker)
         self.image = Image.new("1", (self.width, self.height))
         self.draw = ImageDraw.Draw(self.image)
 
-        # ---- FONTS ----
-        # Three styles only: Title/Large, Medium, Small (+ spinner font)
-        self.font_title = self._load_font(self.ARVO_PATH, 26, fallback=ImageFont.load_default())
-        self.font_medium = self._load_font(self.MULISH_PATH, 16, fallback=self.font_title)
-        self.font_small = self._load_font(self.MULISH_PATH, 12, fallback=ImageFont.load_default())
+        # --------------------------------------------------
+        # FONT DEFINITIONS
+        # --------------------------------------------------
+        # Typography system:
+        # - title   : headings / hero text
+        # - medium  : primary UI text (with vertical breathing room)
+        # - small   : secondary UI text
+        # - label   : compact labels / metadata
+        # - spinner : fixed-width animation glyphs
 
-        self.font_spinner = self._load_font(self.SPINNER_PATH, 10, fallback=self.font_title)
+        self.font_title = self._load_font(
+            self.ARVO_PATH, 26, fallback=ImageFont.load_default()
+        )
 
-        # Clear display
+        self.font_medium = self._load_font(
+            self.MULISH_PATH, 16, fallback=self.font_title
+        )
+
+        self.font_small = self._load_font(
+            self.MULISH_PATH, 12, fallback=ImageFont.load_default()
+        )
+
+        # NEW: Label font (compact, quiet UI text)
+        self.font_label = self._load_font(
+            self.MULISH_PATH, 10, fallback=self.font_small
+        )
+
+        # Spinner / monospace animation font
+        self.font_spinner = self._load_font(
+            self.SPINNER_PATH, 10, fallback=self.font_title
+        )
+
+        # --------------------------------------------------
+        # FONT-SPECIFIC LAYOUT TWEAKS
+        # --------------------------------------------------
+        # Extra vertical breathing room for medium text
+        # (applied manually when drawing text)
+        self.font_medium_padding = 2  # px above + below
+
+        # --------------------------------------------------
+        # CLEAR DISPLAY ON INIT
+        # --------------------------------------------------
         self.oled.fill(0)
         self.oled.show()
+
 
     # ---------- Helpers ----------
 
