@@ -34,10 +34,10 @@ class OLED:
         # ---- FONTS ----
         # Three styles only: Title/Large, Medium, Small (+ spinner font)
         self.font_title = self._load_font(self.ARVO_PATH, 26, fallback=ImageFont.load_default())
-        self.font_medium = self._load_font(self.MULISH_PATH, 14, fallback=self.font_title)
-        self.font_small = self._load_font(self.MULISH_PATH, 10, fallback=ImageFont.load_default())
+        self.font_medium = self._load_font(self.MULISH_PATH, 15, fallback=self.font_title)
+        self.font_small = self._load_font(self.MULISH_PATH, 11, fallback=ImageFont.load_default())
 
-        self.font_spinner = self._load_font(self.SPINNER_PATH, 12, fallback=self.font_title)
+        self.font_spinner = self._load_font(self.SPINNER_PATH, 10, fallback=self.font_title)
 
         # Clear display
         self.oled.fill(0)
