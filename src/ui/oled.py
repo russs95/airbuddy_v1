@@ -81,7 +81,7 @@ class OLED:
 
     # ---------- Screens ----------
 
-    def show_waiting(self, line="Waiting for button"):
+    def show_waiting(self, line="Know your air."):
         self.draw.rectangle((0, 0, self.width, self.height), outline=0, fill=0)
 
         self.draw_centered("airBuddy", 10, self.font_title)
