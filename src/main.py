@@ -7,6 +7,7 @@ from input.button import AirBuddyButton
 from sensors.air import AirSensor
 
 
+
 def main():
     oled = OLED.try_create()
 
