@@ -52,6 +52,10 @@ class OLED:
         self.oled.fill(0)
         self.oled.show()
 
+        # Always define a generic fallback font handle
+        self.font = self.font_small
+
+
     # ---------- Helpers ----------
 
     def clear(self):
@@ -136,10 +140,11 @@ class OLED:
             title = "Air data (cached)"
 
         # You likely already have a title font; fall back safely
-        title_font = getattr(self, "font_title", getattr(self, "font_large", self.font))
-        body_font  = getattr(self, "font_small", self.font)
+        title_font = self.font_title
+        body_font = self.font_small
 
-        # Draw title centered near top
+
+    # Draw title centered near top
         self.draw_centered(title, 0, title_font)
 
         # Body lines
