@@ -82,23 +82,22 @@ class AirSensor:
         """
         try:
             import board
-            import busio
             import adafruit_ens160
             import adafruit_ahtx0
 
-            # Create bus fresh each time we init (helps after transient errors)
-            self._i2c = busio.I2C(board.SCL, board.SDA)
+            # Use shared singleton I2C bus (prevents conflicts with OLED)
+            self._i2c = board.I2C()
 
             self._ens = adafruit_ens160.ENS160(self._i2c)
             self._aht = adafruit_ahtx0.AHTx0(self._i2c)
 
             return True
         except Exception:
-            # Mark as unavailable
             self._i2c = None
             self._ens = None
             self._aht = None
             return False
+
 
     def _available(self) -> bool:
         return (self._ens is not None) and (self._aht is not None)

@@ -1,5 +1,4 @@
 import board
-import busio
 from PIL import Image, ImageDraw, ImageFont
 import adafruit_ssd1306
 
@@ -23,7 +22,7 @@ class OLED:
     # --------------------------------------------------
     # I2C / DISPLAY INITIALIZATION
     # --------------------------------------------------
-        i2c = busio.I2C(board.SCL, board.SDA)
+        i2c = board.I2C()
         self.oled = adafruit_ssd1306.SSD1306_I2C(width, height, i2c, addr=addr)
 
         self.width = width
@@ -87,6 +86,7 @@ class OLED:
         except Exception:
             return fallback
 
+
     def clear(self):
         self.draw.rectangle((0, 0, self.width, self.height), outline=0, fill=0)
         self.oled.image(self.image)
@@ -104,12 +104,19 @@ class OLED:
     def _draw_tag_bottom_right(self, tag: str):
         if not tag:
             return
-        bbox = self.draw.textbbox((0, 0), tag, font=self.font_small)
+
+        # Use label font (Mulish 10)
+        font = self.font_label
+
+        bbox = self.draw.textbbox((0, 0), tag, font=font)
         tw = bbox[2] - bbox[0]
         th = bbox[3] - bbox[1]
+
         x = max(0, self.width - tw - 2)
         y = max(0, self.height - th - 6)
-        self.draw.text((x, y), tag, font=self.font_small, fill=255)
+
+        self.draw.text((x, y), tag, font=font, fill=255)
+
 
     def _text_height(self, text: str, font):
         bbox = self.draw.textbbox((0, 0), text, font=font)
@@ -270,3 +277,6 @@ class OLED:
         except Exception as e:
             print(f"[OLED] Failed to init OLED, running headless. ({e})", flush=True)
             return HeadlessDisplay()
+        except Exception as e2:
+            print(f"[AirSensor] read failed; using fallback. err={e2!r}", flush=True)
+            last = self.get_last_logged()
