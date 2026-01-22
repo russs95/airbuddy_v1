@@ -51,7 +51,7 @@ class Booter:
 
         # Title position: match your idle screen wordmark position
         # (idle uses draw_centered("airBuddy", 10, font_title))
-        title_y = 7
+        title_y = 8
 
         # Draw title once
         self.oled.clear()
@@ -61,7 +61,7 @@ class Booter:
 
         # Bar position: align to the same y as idle "Waiting for button" line
         # (idle uses draw_centered(line, 34, font_small))
-        idle_line_y = 49
+        idle_line_y = 42
 
         # Use block characters to build a text bar
         block_char = "█"

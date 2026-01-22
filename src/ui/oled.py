@@ -141,39 +141,59 @@ class OLED:
         self.oled.image(self.image)
         self.oled.show()
 
-    def show_face(self, air_rating: str, tag: str = "just now"):
+    def show_face(self, air_rating: str):
         """
         Full-screen face based on air_rating + label underneath:
         "Air quality: Good"
+
+        Note: no "cached/just now" tag on this screen.
         """
-        rating_raw = (air_rating or "").strip()
+        rating_raw = (air_rating or "").strip() or "Ok"
         rating = rating_raw.lower()
 
+        # Clear
         self.draw.rectangle((0, 0, self.width, self.height), outline=0, fill=0)
 
-        label = f"Air quality: {rating_raw if rating_raw else 'Ok'}"
+        label = f"Air quality: {rating_raw}"
 
-        # Face geometry (leave space for label)
+        # --- Reserve space for label at bottom ---
+        label_h = self._text_height(label, self.font_small)
+        label_y = self.height - label_h - 1  # 1px padding from bottom
+
+        # --- Face geometry (guaranteed to fit above label) ---
         cx = self.width // 2
-        cy = (self.height // 2) - 6
-        r = min(self.width, self.height) // 2 - 10
+
+        # Top padding for circle and bottom limit right above label
+        top_pad = 2
+        bottom_limit = label_y - 2  # 2px gap above label
+
+        # Available vertical span for the circle region
+        available_h = max(0, bottom_limit - top_pad)
+
+        # Choose radius based on available height and width
+        r = min((available_h // 2), (self.width // 2) - 2)
+        r = max(10, r)  # keep it sane even if fonts change
+
+        cy = top_pad + r  # circle touches top_pad nicely
 
         # Outline
         self.draw.ellipse((cx - r, cy - r, cx + r, cy + r), outline=255, fill=0)
 
-        # Eyes
-        eye_r = 4
-        eye_y = cy - 10
-        eye_dx = 18
+        # Eyes (scaled to radius so they stay inside the circle)
+        eye_r = max(2, r // 10)
+        eye_y = cy - (r // 3)
+        eye_dx = r // 2
+
         self.draw.ellipse((cx - eye_dx - eye_r, eye_y - eye_r,
                            cx - eye_dx + eye_r, eye_y + eye_r), fill=255)
         self.draw.ellipse((cx + eye_dx - eye_r, eye_y - eye_r,
                            cx + eye_dx + eye_r, eye_y + eye_r), fill=255)
 
-        # Mouth
-        mouth_w = 46
-        mouth_h = 26
-        mouth_y = cy + 6
+        # Mouth (scaled)
+        mouth_w = int(r * 1.2)
+        mouth_h = int(r * 0.75)
+        mouth_y = cy + (r // 4)
+
         box = (cx - mouth_w // 2, mouth_y - mouth_h // 2,
                cx + mouth_w // 2, mouth_y + mouth_h // 2)
 
@@ -182,19 +202,18 @@ class OLED:
         elif rating == "good":
             self.draw.arc(box, start=210, end=330, fill=255, width=3)
         elif rating == "ok":
-            y = cy + 18
-            self.draw.line((cx - 18, y, cx + 18, y), fill=255, width=3)
+            y = cy + (r // 2)
+            self.draw.line((cx - (r // 2), y, cx + (r // 2), y), fill=255, width=3)
         else:
             self.draw.arc(box, start=20, end=160, fill=255, width=3)
 
         # Label under face
-        self.draw_centered(label, self.height - 14, self.font_small)
+        self.draw_centered(label, label_y, self.font_small)
 
-        # Tag
-        self._draw_tag_bottom_right(tag)
-
+        # Push to display
         self.oled.image(self.image)
         self.oled.show()
+
 
     @classmethod
     def try_create(cls):

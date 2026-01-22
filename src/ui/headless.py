@@ -15,7 +15,7 @@ class HeadlessDisplay:
     def clear(self):
         pass
 
-    def show_waiting(self, message="Waiting for button"):
+    def show_waiting(self, message="Know your air..."):
         print(f"[UI] {message}", flush=True)
 
     def show_spinner_frame(self, *args, **kwargs):

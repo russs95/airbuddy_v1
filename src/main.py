@@ -31,7 +31,7 @@ def main():
         # ----------------------------
         # IDLE
         # ----------------------------
-        oled.show_waiting("Waiting for button")
+        oled.show_waiting("Know your air...")
         btn.wait_for_press()
         time.sleep(0.08)  # debounce cushion
 
@@ -81,7 +81,8 @@ def main():
         # ----------------------------
         # FACE LAST (2s)
         # ----------------------------
-        oled.show_face(reading.rating, tag=tag)
+        oled.show_face(reading.rating)
+
         time.sleep(2)
 
         # Back to idle
