@@ -22,7 +22,7 @@ def main():
     # Initialize air sensor manager
     air = AirSensor()
 
-    # Start background logging immediately (every 10 minutes, 30s warmup)
+    # Start background logging immediately (every 10 minutes, 30s warmup)..........
     air.start_periodic_logging(interval_seconds=600, warmup_seconds=30)
 
     while True:
