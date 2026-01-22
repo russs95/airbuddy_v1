@@ -22,7 +22,7 @@ class Booter:
         try:
             self.mono_font = ImageFont.truetype(
                 "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf",
-                12
+                8
             )
         except Exception:
             self.mono_font = ImageFont.load_default()
