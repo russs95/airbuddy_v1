@@ -64,8 +64,8 @@ class Booter:
         idle_line_y = 42
 
         # Use block characters to build a text bar
-        block_char = "◯"
-        space_char = " "
+        block_char = "⬤"
+        space_char = "〇"
 
         bw, bh = self._text_size(block_char, self.mono_font)
 

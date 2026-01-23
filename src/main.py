@@ -65,7 +65,7 @@ def main():
             ip = get_ip_address()
 
             # Power tag placeholder for now
-            power_tag = "⚡ USB"
+            power_tag = "±USB"
 
             oled.show_settings(time_str, ip, power_tag)
             time.sleep(4)

@@ -15,11 +15,11 @@ class Spinner:
     # 🔧 TUNABLE ANIMATION PARAMETERS
     # ======================================================
 
-    TOTAL_CHARS = 16        # Total character width of the spinner line
+    TOTAL_CHARS = 17        # Total character width of the spinner line
     # (Should match OLED width & font size)
 
-    MIN_BAR_CHARS = 2       # Narrowest bar width (calm / contracted state)
-    MAX_BAR_CHARS = 16      # Widest bar width (peak / inhale state)
+    MIN_BAR_CHARS = 1       # Narrowest bar width (calm / contracted state)
+    MAX_BAR_CHARS = 17      # Widest bar width (peak / inhale state)
 
     BAR_STEP = 2            # Number of characters added per frame
     # Smaller = smoother, slower breathing
@@ -28,7 +28,7 @@ class Spinner:
     FRAME_INTERVAL = 0.04   # Seconds between frames (animation speed)
     # Lower = faster, higher = calmer
 
-    PEAK_THICKNESS_MARGIN = 6
+    PEAK_THICKNESS_MARGIN = 8
     # How close to max width the bar must be
     # before triggering the "thick" (vertical pulse)
 
