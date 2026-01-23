@@ -314,7 +314,7 @@ class OLED:
         self.clear()
 
         # --- Time ---
-        self.draw_centered(time_str, 4, self.font_large)
+        self.draw_centered(time_str, 4, self.font_title)
 
         # --- IP / connection ---
         ip_text = ip if ip else "No connection"
