@@ -41,50 +41,38 @@ class Spinner:
         self.frames = self._build_frames()
 
     def _build_frames(self):
-        """
-        Generate all animation frames from narrow → wide → narrow.
-
-        Each frame contains:
-        - text  : fixed-width string for centering stability
-        - thick : boolean flag for subtle vertical emphasis
-        """
-
         frames = []
 
-        # Build width progression for inhale (expand)
-        widths_up = list(
-            range(self.MIN_BAR_CHARS, self.MAX_BAR_CHARS + 1, self.BAR_STEP)
-        )
-
-        # Build width regression for exhale (contract)
-        widths_down = list(
-            range(self.MAX_BAR_CHARS - self.BAR_STEP,
-                  self.MIN_BAR_CHARS - 1,
-                  -self.BAR_STEP)
-        )
-
-        # Full breathing cycle
+        widths_up = list(range(self.MIN_BAR_CHARS, self.MAX_BAR_CHARS + 1, self.BAR_STEP))
+        widths_down = list(range(self.MAX_BAR_CHARS - self.BAR_STEP,
+                                 self.MIN_BAR_CHARS - 1,
+                                 -self.BAR_STEP))
         widths = widths_up + widths_down
 
         for w in widths:
-            # Center the bar horizontally
             pad = (self.TOTAL_CHARS - w) // 2
-
-            # Construct fixed-width bar
             text = (" " * pad) + ("█" * w) + (" " * pad)
+            text = text.ljust(self.TOTAL_CHARS)  # constant length => no jitter
 
-            # Ensure constant string length to avoid OLED jitter
-            text = text.ljust(self.TOTAL_CHARS)
-
-            # Trigger vertical pulse only near peak expansion
-            thick = (w >= self.MAX_BAR_CHARS - self.PEAK_THICKNESS_MARGIN)
+            # Thickness phases:
+            # - full expansion (w == MAX) => 5-line (level 2)
+            # - near peak => 3-line (level 1)
+            # - otherwise => 1-line (level 0)
+            if w == self.MAX_BAR_CHARS:
+                thick_level = 2
+            elif w >= (self.MAX_BAR_CHARS - self.PEAK_THICKNESS_MARGIN):
+                thick_level = 1
+            else:
+                thick_level = 0
 
             frames.append({
                 "text": text,
-                "thick": thick
+                "thick_level": thick_level,
+                "w": w,  # optional, handy for debugging
             })
 
         return frames
+
 
     def spin(self, duration=6):
         """

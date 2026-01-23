@@ -139,32 +139,73 @@ class OLED:
 
         frame can be:
           - string
-          - dict: {"text": str, "thick": bool}
+          - dict:
+              {"text": str, "thick": bool}              (legacy; bool => 3 lines)
+              {"text": str, "thick_level": int}         (new; 0=1 line, 1=3 lines, 2=5 lines)
+              {"text": str, "thickness_lines": int}     (optional; explicit 1/3/5)
         """
-        self.draw.rectangle((0, 0, self.width, self.height), outline=0, fill=0)
+    self.draw.rectangle((0, 0, self.width, self.height), outline=0, fill=0)
 
-        thick = False
-        if isinstance(frame, dict):
-            text = frame.get("text", "")
+    # ----------------------------
+    # Parse frame payload
+    # ----------------------------
+    text = ""
+    thickness_lines = 1  # default: 1-line
+
+    if isinstance(frame, dict):
+        text = str(frame.get("text", ""))
+
+        # NEW: explicit thickness lines wins if provided
+        if "thickness_lines" in frame:
+            try:
+                thickness_lines = int(frame.get("thickness_lines", 1))
+            except Exception:
+                thickness_lines = 1
+
+        # NEW: thick_level => 0,1,2 => 1,3,5 lines
+        elif "thick_level" in frame:
+            try:
+                lvl = int(frame.get("thick_level", 0))
+            except Exception:
+                lvl = 0
+            thickness_lines = 1 if lvl <= 0 else (3 if lvl == 1 else 5)
+
+        # LEGACY: thick bool => 3 lines
+        else:
             thick = bool(frame.get("thick", False))
-        else:
-            text = str(frame)
+            thickness_lines = 3 if thick else 1
 
-        text_h = self._text_height(text, self.font_spinner)
-        y = (self.height - text_h) // 2  # center baseline for the spinner
+    else:
+        text = str(frame)
 
-        if thick:
-            # 3-line "thick" pulse centered vertically (up, middle, down)
-            line_gap = 2  # px between duplicate draws (tweak this if needed)
+    # Clamp to sane values
+    if thickness_lines not in (1, 3, 5):
+        thickness_lines = 1
 
-            self.draw_centered(text, max(0, y - line_gap), self.font_spinner)
+    # ----------------------------
+    # Center vertically and draw
+    # ----------------------------
+    text_h = self._text_height(text, self.font_spinner)
+    y_center = (self.height - text_h) // 2
+
+    if thickness_lines == 1:
+        self.draw_centered(text, max(0, y_center), self.font_spinner)
+
+    else:
+        # Draw multiple copies vertically centered around y_center
+        # 3 lines => offsets [-gap, 0, +gap]
+        # 5 lines => offsets [-2gap, -gap, 0, +gap, +2gap]
+        gap = 2  # px between duplicate draws (tweak if you want)
+
+        half = thickness_lines // 2
+        for k in range(-half, half + 1):
+            y = y_center + (k * gap)
+            y = max(0, min(self.height - text_h, y))
             self.draw_centered(text, y, self.font_spinner)
-            self.draw_centered(text, min(self.height - text_h, y + line_gap), self.font_spinner)
-        else:
-            self.draw_centered(text, max(0, y), self.font_spinner)
 
-        self.oled.image(self.image)
-        self.oled.show()
+    self.oled.image(self.image)
+    self.oled.show()
+
 
 
     def show_metric(self, heading: str, value: str, tag: str = "just now"):
