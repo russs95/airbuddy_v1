@@ -413,7 +413,7 @@ def show_settings(self, time_str: str, ip: Optional[str], power_tag: str):
     Settings screen:
       - Time (large)
       - IP address or 'No connection'
-      - Power tag bottom-right
+      - Power tag bottom-right  kjlkjlkj
     """
     self.clear()
 
