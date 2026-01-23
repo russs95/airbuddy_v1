@@ -144,67 +144,67 @@ class OLED:
               {"text": str, "thick_level": int}         (new; 0=1 line, 1=3 lines, 2=5 lines)
               {"text": str, "thickness_lines": int}     (optional; explicit 1/3/5)
         """
-    self.draw.rectangle((0, 0, self.width, self.height), outline=0, fill=0)
+        self.draw.rectangle((0, 0, self.width, self.height), outline=0, fill=0)
 
-    # ----------------------------
-    # Parse frame payload
-    # ----------------------------
-    text = ""
-    thickness_lines = 1  # default: 1-line
+        # ----------------------------
+        # Parse frame payload
+        # ----------------------------
+        text = ""
+        thickness_lines = 1  # default: 1-line
 
-    if isinstance(frame, dict):
-        text = str(frame.get("text", ""))
+        if isinstance(frame, dict):
+            text = str(frame.get("text", ""))
 
-        # NEW: explicit thickness lines wins if provided
-        if "thickness_lines" in frame:
-            try:
-                thickness_lines = int(frame.get("thickness_lines", 1))
-            except Exception:
-                thickness_lines = 1
+            # NEW: explicit thickness lines wins if provided
+            if "thickness_lines" in frame:
+                try:
+                    thickness_lines = int(frame.get("thickness_lines", 1))
+                except Exception:
+                    thickness_lines = 1
 
-        # NEW: thick_level => 0,1,2 => 1,3,5 lines
-        elif "thick_level" in frame:
-            try:
-                lvl = int(frame.get("thick_level", 0))
-            except Exception:
-                lvl = 0
-            thickness_lines = 1 if lvl <= 0 else (3 if lvl == 1 else 5)
+            # NEW: thick_level => 0,1,2 => 1,3,5 lines
+            elif "thick_level" in frame:
+                try:
+                    lvl = int(frame.get("thick_level", 0))
+                except Exception:
+                    lvl = 0
+                thickness_lines = 1 if lvl <= 0 else (3 if lvl == 1 else 5)
 
-        # LEGACY: thick bool => 3 lines
+            # LEGACY: thick bool => 3 lines
+            else:
+                thick = bool(frame.get("thick", False))
+                thickness_lines = 3 if thick else 1
+
         else:
-            thick = bool(frame.get("thick", False))
-            thickness_lines = 3 if thick else 1
+            text = str(frame)
 
-    else:
-        text = str(frame)
+        # Clamp to sane values
+        if thickness_lines not in (1, 3, 5):
+            thickness_lines = 1
 
-    # Clamp to sane values
-    if thickness_lines not in (1, 3, 5):
-        thickness_lines = 1
+        # ----------------------------
+        # Center vertically and draw
+        # ----------------------------
+        text_h = self._text_height(text, self.font_spinner)
+        y_center = (self.height - text_h) // 2
 
-    # ----------------------------
-    # Center vertically and draw
-    # ----------------------------
-    text_h = self._text_height(text, self.font_spinner)
-    y_center = (self.height - text_h) // 2
+        if thickness_lines == 1:
+            self.draw_centered(text, max(0, y_center), self.font_spinner)
 
-    if thickness_lines == 1:
-        self.draw_centered(text, max(0, y_center), self.font_spinner)
+        else:
+            # Draw multiple copies vertically centered around y_center
+            # 3 lines => offsets [-gap, 0, +gap]
+            # 5 lines => offsets [-2gap, -gap, 0, +gap, +2gap]
+            gap = 2  # px between duplicate draws (tweak if you want)
 
-    else:
-        # Draw multiple copies vertically centered around y_center
-        # 3 lines => offsets [-gap, 0, +gap]
-        # 5 lines => offsets [-2gap, -gap, 0, +gap, +2gap]
-        gap = 2  # px between duplicate draws (tweak if you want)
+            half = thickness_lines // 2
+            for k in range(-half, half + 1):
+                y = y_center + (k * gap)
+                y = max(0, min(self.height - text_h, y))
+                self.draw_centered(text, y, self.font_spinner)
 
-        half = thickness_lines // 2
-        for k in range(-half, half + 1):
-            y = y_center + (k * gap)
-            y = max(0, min(self.height - text_h, y))
-            self.draw_centered(text, y, self.font_spinner)
-
-    self.oled.image(self.image)
-    self.oled.show()
+        self.oled.image(self.image)
+        self.oled.show()
 
 
 
