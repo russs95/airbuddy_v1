@@ -230,17 +230,17 @@ class OLED:
 
         # --- Row 1 ---
         draw_left(f"Temp: {reading.temp_c:.1f} °C")
-        draw_right(f"Hum: {reading.humidity:.1f} %")
+        draw_right(f"/ {reading.humidity:.1f} %")
         y += line_h
 
         # --- Row 2 ---
-        draw_left(f"CO2: {reading.eco2_ppm} ppm")
-        draw_right(f"TVOC: {reading.tvoc_ppb} ppb")
+        draw_left(f"CO2: {reading.eco2_ppm}")
+        draw_right(f"TVOC: {reading.tvoc_ppb}")
         y += line_h
 
         # --- Row 3 ---
-        draw_left(f"Air index: {reading.aqi}")
-        draw_right(f"Log no. {log_count}")
+        draw_left(f"Index: {reading.aqi}")
+        draw_right(f"Log {log_count}")
         y += line_h
 
         # --- Row 4 (cached time) ---
