@@ -147,7 +147,7 @@ class OLED:
         self.draw.rectangle((0, 0, self.width, self.height), outline=0, fill=0)
 
         # ----------------------------
-        # Parse frame payload
+        # Parse frame payload GPO
         # ----------------------------
         text = ""
         thickness_lines = 1  # default: 1-line
