@@ -38,7 +38,7 @@ class Booter:
 
     # ---------- main ----------
 
-    def show(self, duration=2.5, fps=12):
+    def show(self, duration=3, fps=30):
         """
         Show a boot screen with a growing progress bar for `duration` seconds.
         Keeps flicker low by:
@@ -71,7 +71,7 @@ class Booter:
 
         # Determine total blocks across, with side margins
         left_margin = 10
-        right_margin = 10
+        right_margin = 0
         usable_w = w - left_margin - right_margin
         blocks_total = max(10, usable_w // max(1, bw))
 

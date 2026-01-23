@@ -257,14 +257,7 @@ class OLED:
         self.oled.image(self.image)
         self.oled.show()
 
-    def get_log_count(self) -> int:
-        if not os.path.exists(self.log_path):
-            return 0
-        try:
-            with open(self.log_path, "r", encoding="utf-8") as f:
-                return max(0, sum(1 for _ in f) - 1)  # minus header
-        except Exception:
-            return 0
+
 
 
     def show_metric(self, heading: str, value: str, tag: str = "just now"):

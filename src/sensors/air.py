@@ -123,6 +123,15 @@ class AirSensor:
     # ----------------------------
     # LOGGING
     # ----------------------------
+    def get_log_count(self) -> int:
+        if not os.path.exists(self.log_path):
+            return 0
+        try:
+            with open(self.log_path, "r", encoding="utf-8") as f:
+                return max(0, sum(1 for _ in f) - 1)  # minus header
+        except Exception:
+            return 0
+
     def _ensure_log_header(self) -> None:
         """
         Create CSV header if file doesn't exist or is empty.
