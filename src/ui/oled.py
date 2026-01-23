@@ -2,7 +2,8 @@ import board
 from PIL import Image, ImageDraw, ImageFont
 import adafruit_ssd1306
 
-from ui.headless import HeadlessDisplay
+from .headless import HeadlessDisplay
+
 
 
 class OLED:
