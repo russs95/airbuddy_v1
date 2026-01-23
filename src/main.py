@@ -1,8 +1,10 @@
+# src/main.py
 import time
 import socket
 from datetime import datetime
 
 from ui.oled import OLED
+from ui.headless import HeadlessDisplay
 from ui.spinner import Spinner
 from ui.booter import Booter
 from input.button import AirBuddyButton
@@ -29,8 +31,23 @@ def get_ip_address():
         return None
 
 
+def create_display():
+    """
+    Create a real OLED if present; otherwise return HeadlessDisplay.
+    (This replaces OLED.try_create(), which may not exist in the current oled.py.)
+    """
+    try:
+        return OLED()
+    except OSError as e:
+        print(f"[OLED] Not detected, running headless. ({e})", flush=True)
+        return HeadlessDisplay()
+    except Exception as e:
+        print(f"[OLED] Failed to init OLED, running headless. ({e})", flush=True)
+        return HeadlessDisplay()
+
+
 def main():
-    oled = OLED.try_create()
+    oled = create_display()
 
     # Boot loader only makes sense on a real display
     if oled.__class__.__name__ != "HeadlessDisplay":
@@ -72,17 +89,20 @@ def main():
             oled.clear()
             continue
 
+        # ----------------------------
+        # CACHED LOG VIEW (triple click)
+        # ----------------------------
         if action == "triple":
             last = air.get_last_logged()
             if last:
-                log_count = air.get_log_count()
+                # Only call get_log_count if you implemented it in AirSensor
+                log_count = air.get_log_count() if hasattr(air, "get_log_count") else 0
                 oled.show_cached(last, log_count)
-                time.sleep(5)
+                time.sleep(6)
             oled.clear()
             continue
 
-
-    # ----------------------------
+        # ----------------------------
         # SAMPLING (single click)
         # Button preempts background logging
         # ----------------------------
@@ -90,7 +110,6 @@ def main():
         reading = None
 
         try:
-            # Pause background logging to avoid sensor contention
             air.pause_periodic_logging()
 
             # Warmup occurs while spinner runs
@@ -115,7 +134,6 @@ def main():
             cached = True
 
         finally:
-            # Resume background logging after button sampling
             air.resume_periodic_logging()
 
         # ----------------------------
@@ -139,7 +157,6 @@ def main():
         oled.show_face(reading.rating)
         time.sleep(2)
 
-        # Back to idle
         oled.clear()
 
 
