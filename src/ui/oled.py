@@ -210,6 +210,12 @@ class OLED:
         """
         Show last cached air reading in a compact two-column layout.
         Uses font_small everywhere.
+
+        Layout (6s display controlled by main.py):
+          Cached 14:35          Log: 234
+          Temp: 32.2 °C     Air Index: 1
+          CO2: 553            TVOC: 102
+          Humidity: 77%
         """
         self.clear()
         font = self.font_small
@@ -217,7 +223,6 @@ class OLED:
 
         x_left = 2
         x_right_margin = self.width - 2
-
         y = 4
 
         def draw_left(text):
@@ -228,35 +233,39 @@ class OLED:
             w = bbox[2] - bbox[0]
             self.draw.text((x_right_margin - w, y), text, font=font, fill=255)
 
+        # --- Extract HH:MM from ISO timestamp safely ---
+        time_part = "--:--"
+        try:
+            ts = str(getattr(reading, "timestamp_iso", "") or "")
+            if "T" in ts:
+                # 2026-01-23T14:35:12+07:00 -> "14:35"
+                time_part = ts.split("T", 1)[1][:5]
+            else:
+                # fallback: if it's already "14:35" etc.
+                time_part = ts[:5]
+        except Exception:
+            pass
+
         # --- Row 1 ---
-        draw_left(f"Temp: {reading.temp_c:.1f} °C")
-        draw_right(f"CO2: {reading.eco2_ppm}")
+        draw_left(f"Cached {time_part}")
+        draw_right(f"Log: {log_count}")
         y += line_h
 
         # --- Row 2 ---
-        draw_left(f"Humidity {reading.humidity:.1f} %")
-        draw_right(f"TVOC: {reading.tvoc_ppb}")
+        draw_left(f"Temp: {reading.temp_c:.1f} °C")
+        draw_right(f"Air Index: {reading.aqi}")
         y += line_h
 
         # --- Row 3 ---
-        draw_left(f"Air Index: {reading.aqi}")
-        draw_right(f"Log {log_count}")
+        draw_left(f"CO2: {reading.eco2_ppm}")
+        draw_right(f"TVOC: {reading.tvoc_ppb}")
         y += line_h
 
-        # --- Row 4 (cached time) ---
-        try:
-            # Extract local time only (HH:MMam/pm)
-            t = reading.timestamp_iso
-            time_part = t.split("T")[1][:5]
-        except Exception:
-            time_part = "--:--"
-
-        draw_left("Cached:")
-        draw_right(time_part)
+        # --- Row 4 ---
+        draw_left(f"Humidity: {reading.humidity:.0f}%")
 
         self.oled.image(self.image)
         self.oled.show()
-
 
 
 
