@@ -215,7 +215,7 @@ class OLED:
           Cached 14:35          Log: 234
           Temp: 32.2 °C     Air Index: 1
           CO2: 553            TVOC: 102
-          Humidity: 77999%
+          Humidity: 79%
         """
         self.clear()
         font = self.font_small
@@ -406,27 +406,27 @@ class OLED:
         self.oled.show()
 
 
-    def show_settings(self, time_str: str, ip: str | None, power_tag: str):
-        """
-        Settings screen:
-          - Time (large)
-          - IP address or 'No connection'
-          - Power tag bottom-right
-        """
-        self.clear()
+    from typing import Optional  # <-- add near top of file
 
-        # --- Time ---
-        self.draw_centered(time_str, 4, self.font_title)
+def show_settings(self, time_str: str, ip: Optional[str], power_tag: str):
+    """
+    Settings screen:
+      - Time (large)
+      - IP address or 'No connection'
+      - Power tag bottom-right
+    """
+    self.clear()
 
-        # --- IP / connection ---
-        ip_text = ip if ip else "No connection"
-        self.draw_centered(ip_text, 30, self.font_medium)
+    self.draw_centered(time_str, 4, self.font_title)
 
-        # --- Power tag ---
-        self._draw_tag_bottom_right(power_tag)
+    ip_text = ip if ip else "No connection"
+    self.draw_centered(ip_text, 30, self.font_medium)
 
-        self.oled.image(self.image)
-        self.oled.show()
+    self._draw_tag_bottom_right(power_tag)
+
+    self.oled.image(self.image)
+    self.oled.show()
+
 
 
     @classmethod
