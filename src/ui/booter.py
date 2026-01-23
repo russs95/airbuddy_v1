@@ -75,9 +75,11 @@ class Booter:
         usable_w = w - left_margin - right_margin
         blocks_total = max(10, usable_w // max(1, bw))
 
-        bar_str_empty = (space_char * blocks_total)
-        bar_text_w = blocks_total * bw
-        bar_x = (w - bar_text_w) // 2
+        # Build an empty bar string and center it using real rendered width
+        bar_str_empty = space_char * blocks_total
+        bar_text_w, _ = self._text_size(bar_str_empty, self.mono_font)
+        bar_x = max(0, (w - bar_text_w) // 2)
+
 
         # Center the bar vertically relative to the idle text line:
         # idle line is drawn at y=34; we want bar to sit in same visual band.
@@ -93,18 +95,25 @@ class Booter:
 
         frames = max(1, int(duration * fps))
 
+        bar_str_empty = space_char * blocks_total
+        bar_text_w, _ = self._text_size(bar_str_empty, self.mono_font)
+        bar_x = max(0, (w - bar_text_w) // 2)
+
+        ...
+
         for i in range(frames + 1):
             progress = i / frames
             filled = int(progress * blocks_total)
             bar_str = (block_char * filled) + (space_char * (blocks_total - filled))
 
-            # Clear only bar region
-            self.oled.draw.rectangle((0, bar_top, w, bar_bottom), outline=0, fill=0)
+            # Recompute exact rendered width each frame (fixes subtle left bias)
+            bar_text_w, _ = self._text_size(bar_str, self.mono_font)
+            bar_x = max(0, (w - bar_text_w) // 2)
 
-            # Draw bar
+            self.oled.draw.rectangle((0, bar_top, w, bar_bottom), outline=0, fill=0)
             self.oled.draw.text((bar_x, bar_y), bar_str, font=self.mono_font, fill=255)
 
             self.oled.oled.image(self.oled.image)
             self.oled.oled.show()
-
             time.sleep(1 / fps)
+
