@@ -1,10 +1,32 @@
 import time
+import socket
+from datetime import datetime
 
 from ui.oled import OLED
 from ui.spinner import Spinner
 from ui.booter import Booter
 from input.button import AirBuddyButton
 from sensors.air import AirSensor
+
+
+def get_time_str():
+    # Example: 21:07
+    return datetime.now().strftime("%H:%M")
+
+
+def get_ip_address():
+    """
+    Best-effort LAN IP detection.
+    Returns None if not connected.
+    """
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+        s.close()
+        return ip
+    except Exception:
+        return None
 
 
 def main():
@@ -22,7 +44,7 @@ def main():
     # Initialize air sensor manager
     air = AirSensor()
 
-    # Start background logging immediately (every 10 minutes, 30s warmup)..........
+    # Start background logging immediately (every 10 minutes, 30s warmup)
     air.start_periodic_logging(interval_seconds=600, warmup_seconds=30)
 
     while True:
@@ -30,20 +52,36 @@ def main():
         # IDLE
         # ----------------------------
         oled.show_waiting("Know your air...")
-        btn.wait_for_press()
-        time.sleep(0.08)  # debounce cushion
+        action = btn.wait_for_action()
+
+        # Small debounce cushion after click(s)
+        time.sleep(0.08)
 
         # ----------------------------
-        # SAMPLING (button preempts background logging)
+        # SETTINGS (double click)
+        # ----------------------------
+        if action == "double":
+            time_str = get_time_str()
+            ip = get_ip_address()
+
+            # Power tag placeholder for now
+            power_tag = "⚡ USB"
+
+            oled.show_settings(time_str, ip, power_tag)
+            time.sleep(4)
+            oled.clear()
+            continue
+
+        # ----------------------------
+        # SAMPLING (single click)
+        # Button preempts background logging
         # ----------------------------
         cached = False
         reading = None
 
         try:
             # Pause background logging to avoid sensor contention
-            # (If not implemented yet, we'll add it in sensors/air.py)
-            if hasattr(air, "pause_periodic_logging"):
-                air.pause_periodic_logging()
+            air.pause_periodic_logging()
 
             # Warmup occurs while spinner runs
             air.begin_sampling(warmup_seconds=6, source="button")
@@ -54,7 +92,8 @@ def main():
             if getattr(reading, "source", "") == "fallback":
                 cached = True
 
-        except Exception:
+        except Exception as e:
+            print(f"[MAIN] sampling failed: {e!r}", flush=True)
             last = air.get_last_logged()
             if last is None:
                 oled.show_waiting("Sensor error")
@@ -67,8 +106,7 @@ def main():
 
         finally:
             # Resume background logging after button sampling
-            if hasattr(air, "resume_periodic_logging"):
-                air.resume_periodic_logging()
+            air.resume_periodic_logging()
 
         # ----------------------------
         # DISPLAY SEQUENCE (2s each)

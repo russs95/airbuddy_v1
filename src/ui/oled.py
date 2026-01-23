@@ -193,73 +193,136 @@ class OLED:
     def show_face(self, air_rating: str):
         """
         Full-screen face based on air_rating + label underneath:
-        "Air quality: Good"
+          "Air quality: Good"
+
+        IMPORTANT:
+          - The face outline (circle) and eyes are always the same.
+          - ONLY the mouth changes based on the air category:
+              * "Very good" -> big smile
+              * "Good"      -> smile
+              * "Ok"        -> flat / straight mouth
+              * "Poor"      -> frown
 
         Note: no "cached/just now" tag on this screen.
         """
-        rating_raw = (air_rating or "").strip() or "Ok"
-        rating = rating_raw.lower()
 
-        # Clear
+        # ----------------------------
+        # Normalize rating text
+        # ----------------------------
+        rating_raw = (air_rating or "").strip() or "Ok"
+        rating = rating_raw.strip().lower().replace("-", " ").replace("_", " ")
+        rating = " ".join(rating.split())  # collapse whitespace
+
+        # ----------------------------
+        # Clear frame
+        # ----------------------------
         self.draw.rectangle((0, 0, self.width, self.height), outline=0, fill=0)
 
         label = f"Air quality: {rating_raw}"
 
-        # --- Reserve space for label at bottom ---
+        # Reserve space for label at bottom
         label_h = self._text_height(label, self.font_small)
         label_y = self.height - label_h - 1  # 1px padding from bottom
 
-        # --- Face geometry (guaranteed to fit above label) ---
+        # ----------------------------
+        # Face geometry (fits above label)
+        # ----------------------------
         cx = self.width // 2
-
-        # Top padding for circle and bottom limit right above label
         top_pad = 2
-        bottom_limit = label_y - 2  # 2px gap above label
-
-        # Available vertical span for the circle region
+        bottom_limit = label_y - 2  # gap above label
         available_h = max(0, bottom_limit - top_pad)
 
-        # Choose radius based on available height and width
+        # radius constrained by both height and width
         r = min((available_h // 2), (self.width // 2) - 2)
-        r = max(10, r)  # keep it sane even if fonts change
+        r = max(10, r)
 
-        cy = top_pad + r  # circle touches top_pad nicely
+        cy = top_pad + r
 
-        # Outline
+        # ----------------------------
+        # Draw face outline (circle)
+        # ----------------------------
         self.draw.ellipse((cx - r, cy - r, cx + r, cy + r), outline=255, fill=0)
 
-        # Eyes (scaled to radius so they stay inside the circle)
+        # ----------------------------
+        # Draw eyes (same for all ratings)
+        # ----------------------------
         eye_r = max(2, r // 10)
         eye_y = cy - (r // 3)
         eye_dx = r // 2
 
-        self.draw.ellipse((cx - eye_dx - eye_r, eye_y - eye_r,
-                           cx - eye_dx + eye_r, eye_y + eye_r), fill=255)
-        self.draw.ellipse((cx + eye_dx - eye_r, eye_y - eye_r,
-                           cx + eye_dx + eye_r, eye_y + eye_r), fill=255)
+        self.draw.ellipse(
+            (cx - eye_dx - eye_r, eye_y - eye_r, cx - eye_dx + eye_r, eye_y + eye_r),
+            fill=255
+        )
+        self.draw.ellipse(
+            (cx + eye_dx - eye_r, eye_y - eye_r, cx + eye_dx + eye_r, eye_y + eye_r),
+            fill=255
+        )
 
-        # Mouth (scaled)
+        # ----------------------------
+        # Mouth box (same position; shape depends on rating)
+        # ----------------------------
         mouth_w = int(r * 1.2)
         mouth_h = int(r * 0.75)
         mouth_y = cy + (r // 4)
 
-        box = (cx - mouth_w // 2, mouth_y - mouth_h // 2,
-               cx + mouth_w // 2, mouth_y + mouth_h // 2)
+        box = (
+            cx - mouth_w // 2, mouth_y - mouth_h // 2,
+            cx + mouth_w // 2, mouth_y + mouth_h // 2
+        )
 
-        if rating in ("very good", "verygood", "very_good"):
-            self.draw.arc(box, start=200, end=340, fill=255, width=3)
-        elif rating == "good":
-            self.draw.arc(box, start=210, end=330, fill=255, width=3)
-        elif rating == "ok":
-            y = cy + (r // 2)
-            self.draw.line((cx - (r // 2), y, cx + (r // 2), y), fill=255, width=3)
-        else:
+        # ----------------------------
+        # Mouth variants:
+        #   Smiles use the LOWER arc of the box (around 20..160 degrees).
+        #   Frowns use the UPPER arc of the box (around 200..340 degrees).
+        # ----------------------------
+        if rating in ("very good", "verygood"):
+            # BIG SMILE
             self.draw.arc(box, start=20, end=160, fill=255, width=3)
 
+        elif rating == "good":
+            # SMILE (slightly flatter than very good)
+            # Narrower arc range = flatter curve
+            self.draw.arc(box, start=35, end=145, fill=255, width=3)
+
+        elif rating == "ok":
+            # FLAT / STRAIGHT mouth
+            y = cy + (r // 2)
+            self.draw.line((cx - (r // 2), y, cx + (r // 2), y), fill=255, width=3)
+
+        else:
+            # FROWN (Poor / default)
+            self.draw.arc(box, start=200, end=340, fill=255, width=3)
+
+        # ----------------------------
         # Label under face
+        # ----------------------------
         self.draw_centered(label, label_y, self.font_small)
 
         # Push to display
+        self.oled.image(self.image)
+        self.oled.show()
+
+
+    def show_settings(self, time_str: str, ip: str | None, power_tag: str):
+        """
+        Settings screen:
+          - Time (large)
+          - IP address or 'No connection'
+          - Power tag bottom-right
+        """
+        self.clear()
+
+        # --- Time ---
+        self.draw_centered(time_str, 4, self.font_large)
+
+        # --- IP / connection ---
+        ip_text = ip if ip else "No connection"
+        self.draw_centered(ip_text, 30, self.font_medium)
+
+        # --- Power tag ---
+        self._draw_tag_bottom_right(power_tag)
+
         self.oled.image(self.image)
         self.oled.show()
 
